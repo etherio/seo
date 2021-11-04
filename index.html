@@ -25,14 +25,14 @@
       <input type="text" class="form-control" id="keywords" v-model="formData.keywords">
     </div>
     <div class="py-2"><hr></div>
-    <pre><code ref="output">
+    <textarea style="font-family: monospace">
       <meta name="title" content="{{ formData.title }}">
       <meta name="description" content="{{ formData.description }}">
       <meta name="image" content="{{ formData.image }}">
       <meta name="og:title" content="{{ formData.title }}">
       <meta name="og:description" content="{{ formData.description }}">
       <meta name="og:image" content="{{ formData.image }}">
-    </code></pre>
+    </textarea>
   </div>
   <script>
   new Vue({
@@ -44,9 +44,6 @@
         image: "",
         keywords: "",
       },
-    },
-    mounted() {
-
     },
   }).$mount('#app');
   </script>

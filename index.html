@@ -7,6 +7,11 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.1/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.4.0/build/styles/monokai.min.css"
+    />
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.4.0/build/highlight.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6/dist/vue.min.js"></script>
   </head>
   <body>
@@ -18,6 +23,7 @@
           class="form-control"
           id="title"
           v-model="formData.title"
+          @change="update()"
         />
       </div>
       <div class="mb-3">
@@ -27,6 +33,7 @@
           class="form-control"
           id="description"
           v-model="formData.description"
+          @change="update()"
         />
       </div>
       <div class="mb-3">
@@ -36,26 +43,39 @@
           class="form-control"
           id="image"
           v-model="formData.image"
+          @change="update()"
         />
       </div>
       <div class="mb-3">
         <label class="form-label" for="url">URL</label>
         <input
-          type="urlF"
+          type="url"
           class="form-control"
           id="url"
           v-model="formData.url"
         />
       </div>
       <div class="py-2"><hr /></div>
-      <textarea
-        class="form-control"
-        style="height: 120px; font-family: monospace"
-        readonly
-        [innerHTML]="outputHtml"
-      ></textarea>
+      <div class="position-relative">
+        <a
+          href="javascript:void(0);"
+          class="position-absolute badge bg-primary rounded-pill text-decoration-none"
+          style="top: 8px; right: 8px"
+        >
+          {{copied?'Copied':'Click to Copy'}}
+        </a>
+        <pre><code
+    class="language-html"
+    ref="output"
+    v-text="outputHtml"
+    @click="copyClipboard()"
+  >
+</code></pre>
+      </div>
     </div>
     <script>
+      let _t;
+
       new Vue({
         data: {
           formData: {
@@ -64,19 +84,50 @@
             image: "",
             url: "",
           },
+          copied: false,
+          outputHtml: "",
+          renderedHtml: "",
         },
-        computed: {
-          outputHtml() {
+        methods: {
+          update() {
             const formData = this.formData;
-            return `      <meta name="title" content="${this.formData.title}">
+            this.renderedHtml = `      <!-- For Primary (Google, etc)  -->
+      <meta name="title" content="${this.formData.title}">
       <meta name="description" content="${formData.description}">
       <meta name="image" content="${formData.image}">
-      <meta name="og:title" content="${formData.title}">
-      <meta name="og:description" content="${formData.description}">
-      <meta name="og:image" content="${formData.image}">
-      <meta name="og:type" content="website">
-      <meta name="og:url" content="${formData.url}">`;
+
+      <!-- For Facebook (Open Graph) -->
+      <meta property="og:type" content="website">
+      <meta property="og:title" content="${formData.title}">
+      <meta property="og:description" content="${formData.description}">
+      <meta property="og:image" content="${formData.image}">
+      <meta property="og:url" content="${formData.url}">
+
+      <!-- For Twitter [Image Card] -->
+      <meta property="twitter:card" content="summary_large_image">
+      <meta property="twitter:title" content="${formData.title}">
+      <meta property="twitter:description" content="${formData.description}">
+      <meta property="twitter:image" content="${formData.image}">
+      <meta property="twitter:url" content="${formData.url}">`;
+            this.highlight();
           },
+          highlight() {
+            this.copied = false;
+            _t && clearTimeout(_t);
+            _t = setTimeout(() => {
+              this.outputHtml = this.renderedHtml;
+              requestAnimationFrame(() =>
+                hljs.highlightElement(this.$refs.output)
+              );
+            }, 200);
+          },
+          copyClipboard() {
+            this.copied = true;
+            navigator.clipboard.writeText(this.outputHtml);
+          },
+        },
+        mounted() {
+          this.update();
         },
       }).$mount("#app");
     </script>
